@@ -22,36 +22,34 @@ class ResizeableImage(imagematrix.ImageMatrix):
         return seam
 
     def dynamic(self):
-        max_x = self.width
-        max_y = self.height
-        matrix = []
-        start = 1 # minimum energy pixel (i) in last row
+        max_x = self.width - 1
+        max_y = self.height - 1
+        memo = {}
+        start = 0 # minimum energy pixel (i) in last row
 
-        # first row of pixels
-        matrix.append([])
-        for x in range(0, max_x):
-            matrix[0].append(self.energy(x, 0))
+        # first row of pixels (j = 0)
+        for i in range(0, max_x):
+            memo[i, 0] = self.energy(i, 0)
 
         # remaining rows
         for j in range(1, max_y):
-            matrix.append([])
             for i in range(0, max_x):
                 p = []
-                p.append(matrix[j - 1][i])
+                p.append(memo[i, j-1])
 
                 try:
-                    p.append(matrix[j - 1][i - 1])
-                except IndexError:
+                    p.append(memo[i-1, j-1])
+                except KeyError:
                     pass
 
                 try:
-                    p.append(matrix[j - 1][i + 1])
-                except IndexError:
+                    p.append(memo[i+1, j-1])
+                except KeyError:
                     pass
 
-                matrix[j].append(min(x for x in p) + self.energy(i, j))
+                memo[i, j] = min(x for x in p) + self.energy(i, j)
 
-                if j == max_y and matrix[j][i] < matrix[j][start]:
+                if j == max_y and memo[i, j] < memo[start, j]:
                         start = i
 
         # climb up matrix to assemble seam
@@ -62,18 +60,18 @@ class ResizeableImage(imagematrix.ImageMatrix):
             seam.append((i, j))
             if j == 0:
                 break
+
             j -= 1
 
-            print(j, i)
             # determine next pixel in seam
-            a = matrix[j][i] # up
+            a = memo[i, j] # up
             b = None
             c = None
 
             if i > 0:
-                b = matrix[j][i - 1] # up left
+                b = memo[i-1, j] # up left
             if i < max_x:
-                c = matrix[j][i + 1] # up right
+                c = memo[i+1, j] # up right
 
             if b and b < a and b < c:
                 i -= 1
