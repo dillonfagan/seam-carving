@@ -14,10 +14,6 @@ class ResizeableImage(imagematrix.ImageMatrix):
         return seam
 
     def naive(self):
-        max_x = self.width - 1
-        max_y = self.height - 1
-        matrix = []
-
         seam = []
         return seam
 
@@ -25,15 +21,14 @@ class ResizeableImage(imagematrix.ImageMatrix):
         max_x = self.width - 1
         max_y = self.height - 1
         memo = {}
-        start = 0 # minimum energy pixel (i) in last row
 
         # first row of pixels (j = 0)
-        for i in range(0, max_x):
+        for i in range(0, max_x + 1):
             memo[i, 0] = self.energy(i, 0)
 
         # remaining rows
-        for j in range(1, max_y):
-            for i in range(0, max_x):
+        for j in range(1, max_y + 1):
+            for i in range(0, max_x + 1):
                 p = []
                 p.append(memo[i, j-1])
 
@@ -49,8 +44,10 @@ class ResizeableImage(imagematrix.ImageMatrix):
 
                 memo[i, j] = min(x for x in p) + self.energy(i, j)
 
-                if j == max_y and memo[i, j] < memo[start, j]:
-                        start = i
+        start = 0
+        for i in range(0, max_x + 1):
+            if memo[i, max_y] < memo[start, max_y]:
+                start = i
 
         # climb up matrix to assemble seam
         seam = []
