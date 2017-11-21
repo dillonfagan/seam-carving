@@ -17,9 +17,9 @@ class ResizeableImage(imagematrix.ImageMatrix):
     def dynamic(self):
         max_x = self.width - 1
         max_y = self.height - 1
-        memo = {}
-        prev = {}
-        start = 0
+        memo = {} # energy of points already evaluated
+        prev = {} # previous pixel (lowest energy) for every pixel
+        start = 0 # i value of cheapest pixel in last row
 
         # first row of pixels (j = 0)
         for i in range(0, max_x + 1):
